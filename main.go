@@ -13,19 +13,6 @@ import (
 	"time"
 )
 
-// import (
-// 	"flag"
-// 	"fmt"
-// 	"log"
-// 	"net"
-// 	"net/http"
-// 	"net/http/httputil"
-// 	"net/url"
-// 	"sync"
-// 	"sync/atomic"
-// 	"time"
-// )
-
 func main() {
 	port := flag.Int("port", 8080, "Port to serve on")
 	flag.Parse()

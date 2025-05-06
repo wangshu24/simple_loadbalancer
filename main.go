@@ -18,15 +18,15 @@ func main() {
 	flag.Parse()
 
 	servers := []string{
-		"http://localhost:8181",
-		"http://localhost:8182",
-		"http://localhost:8183",
-		"http://localhost:8184",
-		"http://localhost:8185",
-		"http://localhost:8186",
-		"http://localhost:8187",
-		"http://localhost:8188",
-		"http://localhost:8189",
+		"localhost:8081",
+		// "http://localhost:8082",
+		// "http://localhost:8083",
+		// "http://localhost:8084",
+		// "http://localhost:8085",
+		// "http://localhost:8086",
+		// "http://localhost:8087",
+		// "http://localhost:8088",
+		// "http://localhost:8089",
 	}
 
 	lb := &LoadBalancer{}
@@ -56,11 +56,11 @@ func main() {
 	go lb.PeriodicHealthCheck(time.Minute)
 
 	server := http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
+		Addr:    fmt.Sprintf(":%d", *port),
 		Handler: lb,
 	}
 
-	log.Printf("Load balancer started on port :%d\n", port)
+	log.Printf("Load balancer started on port :%d\n", *port)
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

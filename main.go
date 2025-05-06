@@ -29,7 +29,7 @@ func main() {
 		"http://localhost:8189",
 	}
 
-	var lb *LoadBalancer
+	lb := &LoadBalancer{}
 
 	for _, surl := range servers {
 		url, err := url.Parse(surl)

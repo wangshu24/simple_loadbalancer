@@ -18,15 +18,15 @@ func main() {
 	flag.Parse()
 
 	servers := []string{
-		"localhost:8081",
-		// "http://localhost:8082",
-		// "http://localhost:8083",
-		// "http://localhost:8084",
-		// "http://localhost:8085",
-		// "http://localhost:8086",
-		// "http://localhost:8087",
-		// "http://localhost:8088",
-		// "http://localhost:8089",
+		"http://localhost:8081",
+		"http://localhost:8082",
+		"http://localhost:8083",
+		"http://localhost:8084",
+		"http://localhost:8085",
+		"http://localhost:8086",
+		"http://localhost:8087",
+		"http://localhost:8088",
+		"http://localhost:8089",
 	}
 
 	lb := &LoadBalancer{}
@@ -39,7 +39,7 @@ func main() {
 
 		proxy := httputil.NewSingleHostReverseProxy(url)
 		proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-			log.Printf("Error: %v", err)
+			log.Printf("Error response from proxy: %v", err)
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		}
 
@@ -93,11 +93,11 @@ type LoadBalancer struct {
 
 func (l *LoadBalancer) nextBackend() *BackEnd {
 	//Setup next index based on current counter
-	next := atomic.AddUint64(&l.counter, uint64(1)) & uint64(len(l.backends))
+	next := atomic.AddUint64(&l.counter, uint64(1)) % uint64(len(l.backends))
 
 	//Find the next healthy backend servers
 	for i := 0; i < len(l.backends); i++ {
-		idx := (int(next) + i) & len(l.backends)
+		idx := (int(next) + i) % len(l.backends)
 		if l.backends[idx].isAlive() {
 			return l.backends[idx]
 		}
@@ -108,7 +108,7 @@ func (l *LoadBalancer) nextBackend() *BackEnd {
 
 func (b *BackEnd) isBackendAlive() bool {
 	timeout := 5 * time.Second
-	conn, err := net.DialTimeout("tcp", b.url.String(), timeout)
+	conn, err := net.DialTimeout("tcp", b.url.Host, timeout)
 	if err != nil {
 		log.Printf("Site unreachable on port %s", err)
 		b.setAlive(false)
@@ -121,10 +121,10 @@ func (b *BackEnd) isBackendAlive() bool {
 func (l *LoadBalancer) healthCheck() {
 	for _, b := range l.backends {
 		status := b.isBackendAlive()
+		b.setAlive(status)
 		if status {
 			log.Printf("Service on port %s is doing well", b.url.String())
 		} else {
-			b.setAlive(false)
 			log.Printf("Service on port %s is dead", b.url.String())
 		}
 	}
